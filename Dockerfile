@@ -1,17 +1,17 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Install system dependencies, PHP extensions for PostgreSQL, and Node.js
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
+    libpng-dev \
     zip \
     unzip \
     git \
     curl \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
-    && docker-php-ext-install pdo pdo_pgsql pgsql zip
-
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip gd
 # Enable Apache mod_rewrite (required for Laravel routing)
 RUN a2enmod rewrite
 
