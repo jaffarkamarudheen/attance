@@ -32,6 +32,8 @@ RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 RUN npm run build
 
+# Create a symlink so Apache can serve Vite's /build path from the public folder
+RUN ln -s /var/www/html/public/build /var/www/html/build
 # Set required permissions for Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
