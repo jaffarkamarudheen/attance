@@ -15,4 +15,4 @@ Route::post('/web-network-log', [App\Http\Controllers\ApiController::class, 'web
 Route::post('/admin/employees', [App\Http\Controllers\HomeController::class, 'storeEmployee'])->middleware('auth');
 Route::get('/admin/reports/pdf', [App\Http\Controllers\HomeController::class, 'exportPdf'])->middleware('auth');
 Route::get('/admin/reports/excel', [App\Http\Controllers\HomeController::class, 'exportExcel'])->middleware('auth');
-Route::get('/admin/reports/daily-excel', [App\Http\Controllers\HomeController::class, 'exportDailyExcel'])->middleware('auth');
+Route::get('/admin/reports/advanced', [App\Http\Controllers\HomeController::class, 'exportAdvancedReport'])->middleware('auth');

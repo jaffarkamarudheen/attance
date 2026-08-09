@@ -73,19 +73,44 @@ class HomeController extends Controller
         return redirect()->back()->with('success', 'Employee account created successfully!');
     }
 
-    public function exportDailyExcel(Request $request)
+    public function exportAdvancedReport(Request $request)
     {
         if (auth()->user()->role !== 'Admin') return abort(403);
 
         $request->validate([
-            'date' => 'required|date'
+            'user_id' => 'required',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+            'format' => 'required|in:excel,pdf'
         ]);
 
-        $date = \Carbon\Carbon::parse($request->date)->format('Y-m-d');
-        
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\DailyAttendanceExport($date), 
-            "daily_attendance_{$date}.xlsx"
+        $export = new \App\Exports\AdvancedAttendanceExport(
+            $request->user_id,
+            $request->from_date,
+            $request->to_date
         );
+
+        if ($request->format === 'excel') {
+            return \Maatwebsite\Excel\Facades\Excel::download(
+                $export, 
+                "advanced_attendance_report.xlsx"
+            );
+        } else {
+            // PDF
+            $records = collect($export->collection()); // Returns mapped data
+            // We need to map the collection like the Excel export does to get the structured data for the view
+            $mappedData = $records->map(function($user) use ($export) {
+                // Wait, if it's returning user instances, mapping them one by one isn't going to work directly because Excel's FromCollection maps behind the scenes.
+                // We'll just generate the report data in the Export class directly.
+                return null; 
+            });
+            
+            // To make this easier, we'll retrieve the mapped array directly from the export class
+            $data = $export->getReportData();
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.advanced_pdf', compact('data'))
+                    ->setPaper('a4', 'landscape');
+            return $pdf->download('advanced_attendance_report.pdf');
+        }
     }
 }
