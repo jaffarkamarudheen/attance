@@ -15,6 +15,9 @@
             <a href="{{ url('/admin/reports/excel') }}" class="btn btn-success rounded-pill shadow-sm btn-hover-scale px-4">
                 <i class="fas fa-file-excel me-2"></i> Export All
             </a>
+            <button class="btn btn-warning text-white rounded-pill shadow-sm btn-hover-scale px-4" data-bs-toggle="modal" data-bs-target="#filterReportModal">
+                <i class="fas fa-filter me-2"></i> Filter Report
+            </button>
             <button class="btn btn-info text-white rounded-pill shadow-sm btn-hover-scale px-4" data-bs-toggle="modal" data-bs-target="#dailyExportModal">
                 <i class="fas fa-calendar-day me-2"></i> Daily Report
             </button>
@@ -108,6 +111,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Filter Report Modal -->
+    <div class="modal fade" id="filterReportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-filter me-2"></i>Filter Report</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url('/admin/reports/advanced') }}" method="GET">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Select Employee</label>
+                            <select name="user_id" class="form-select form-control-lg bg-light" required>
+                                <option value="all">All Employees</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}">{{ $emp->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">From Date</label>
+                            <input type="date" name="from_date" class="form-control form-control-lg bg-light" required max="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">To Date</label>
+                            <input type="date" name="to_date" class="form-control form-control-lg bg-light" required max="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Report Type</label>
+                            <select name="format" class="form-select form-control-lg bg-light" required>
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pb-4 px-4">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning text-white px-4 fw-medium shadow-sm">Generate Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <div class="row">
         <!-- Employees Column -->
