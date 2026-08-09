@@ -34,6 +34,29 @@ class ApiController extends Controller
         ]);
     }
 
+    private function resolveLocationName($lat, $lon, $providedName)
+    {
+        if (!empty($providedName) && $providedName !== 'Unknown Location') {
+            return $providedName;
+        }
+        
+        if ($lat && $lon) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::withHeaders([
+                    'User-Agent' => 'AttanceWebApp/1.0 (contact@example.com)'
+                ])->timeout(5)->get("https://nominatim.openstreetmap.org/reverse?format=json&lat={$lat}&lon={$lon}");
+                
+                if ($response->successful()) {
+                    $data = $response->json();
+                    return $data['display_name'] ?? 'Unknown Location';
+                }
+            } catch (\Exception $e) {
+                // Ignore and fall through
+            }
+        }
+        return null;
+    }
+
     public function punchIn(Request $request)
     {
         $user = $request->user();
@@ -41,6 +64,8 @@ class ApiController extends Controller
             'user_id' => $user->id,
             'punch_in' => now(),
         ]);
+
+        $locationName = $this->resolveLocationName($request->latitude, $request->longitude, $request->location_name);
 
         // Log location immediately on punch in
         NetworkLog::create([
@@ -51,7 +76,7 @@ class ApiController extends Controller
             'device_name' => $request->device_name ?? (substr($request->userAgent(), 0, 255) ?? 'Web Browser'),
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-            'location_name' => $request->location_name,
+            'location_name' => $locationName,
         ]);
 
         return response()->json(['message' => 'Punched in successfully', 'record' => $record]);
@@ -70,6 +95,8 @@ class ApiController extends Controller
                 'punch_out' => now(),
             ]);
 
+            $locationName = $this->resolveLocationName($request->latitude, $request->longitude, $request->location_name);
+
             // Log location immediately on punch out
             NetworkLog::create([
                 'user_id' => $user->id,
@@ -79,7 +106,7 @@ class ApiController extends Controller
                 'device_name' => $request->device_name ?? (substr($request->userAgent(), 0, 255) ?? 'Web Browser'),
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
-                'location_name' => $request->location_name,
+                'location_name' => $locationName,
             ]);
 
             return response()->json(['message' => 'Punched out successfully', 'attendance' => $attendance]);
@@ -113,6 +140,8 @@ class ApiController extends Controller
         // Get device name from User-Agent, default to 'Web Browser'
         $userAgent = $request->userAgent();
         
+        $locationName = $this->resolveLocationName($request->latitude, $request->longitude, $request->location_name);
+
         $log = NetworkLog::create([
             'user_id' => auth()->id(),
             'ssid' => 'Web App',
@@ -121,7 +150,7 @@ class ApiController extends Controller
             'device_name' => substr($userAgent, 0, 255) ?? 'Web Browser',
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
-            'location_name' => $request->location_name,
+            'location_name' => $locationName,
         ]);
 
         return response()->json(['message' => 'Web Network logged successfully', 'log' => $log]);
