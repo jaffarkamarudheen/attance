@@ -97,15 +97,6 @@ class HomeController extends Controller
             );
         } else {
             // PDF
-            $records = collect($export->collection()); // Returns mapped data
-            // We need to map the collection like the Excel export does to get the structured data for the view
-            $mappedData = $records->map(function($user) use ($export) {
-                // Wait, if it's returning user instances, mapping them one by one isn't going to work directly because Excel's FromCollection maps behind the scenes.
-                // We'll just generate the report data in the Export class directly.
-                return null; 
-            });
-            
-            // To make this easier, we'll retrieve the mapped array directly from the export class
             $data = $export->getReportData();
 
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.reports.advanced_pdf', compact('data'))
