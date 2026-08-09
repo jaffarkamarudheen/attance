@@ -50,7 +50,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($myAttendance->take(5) as $record)
+                                @forelse($myAttendance as $record)
                                 <tr>
                                     <td>{{ $record->created_at->format('M d, Y') }}</td>
                                     <td>
@@ -75,6 +75,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="mt-3">
+                        {{ $myAttendance->appends(request()->except('attendance_page'))->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

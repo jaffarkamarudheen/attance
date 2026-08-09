@@ -200,7 +200,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($attendance->take(10) as $record)
+                                @forelse($attendance as $record)
                                 <tr>
                                     <td class="fw-medium">{{ $record->user->name }}</td>
                                     <td>{{ $record->created_at->format('M d, Y') }}</td>
@@ -227,6 +227,9 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="mt-3">
+                        {{ $attendance->appends(request()->except('attendance_page'))->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
             </div>
 
@@ -249,7 +252,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($networkLogs->take(10) as $log)
+                                @forelse($networkLogs as $log)
                                 <tr>
                                     <td class="fw-medium">{{ $log->user->name }}</td>
                                     <td><span class="text-info fw-semibold"><i class="fas fa-wifi me-1"></i> {{ $log->ssid ?? 'Unknown' }}</span></td>
@@ -273,6 +276,9 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="mt-3">
+                        {{ $networkLogs->appends(request()->except('network_page'))->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

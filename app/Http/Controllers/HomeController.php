@@ -22,8 +22,8 @@ class HomeController extends Controller
         
         if ($user->role === 'Admin') {
             $employees = \App\Models\User::where('role', 'Employee')->get();
-            $attendance = \App\Models\AttendanceRecord::with('user')->latest()->get();
-            $networkLogs = \App\Models\NetworkLog::with('user')->latest()->get();
+            $attendance = \App\Models\AttendanceRecord::with('user')->latest()->paginate(10, ['*'], 'attendance_page');
+            $networkLogs = \App\Models\NetworkLog::with('user')->latest()->paginate(10, ['*'], 'network_page');
             return view('admin.dashboard', compact('employees', 'attendance', 'networkLogs'));
         }
 
@@ -34,7 +34,7 @@ class HomeController extends Controller
             
         $myAttendance = \App\Models\AttendanceRecord::where('user_id', $user->id)
             ->latest()
-            ->get();
+            ->paginate(10, ['*'], 'attendance_page');
 
         return view('employee.dashboard', compact('activePunch', 'myAttendance'));
     }
