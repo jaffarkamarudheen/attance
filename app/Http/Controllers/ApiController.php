@@ -34,12 +34,41 @@ class ApiController extends Controller
         ]);
     }
 
-    private function resolveLocationName($lat, $lon, $providedName)
+    private function resolveLocationName(&$lat, &$lon, $providedName, $ip)
     {
+        // 1. If GPS is completely missing, fallback to IP Geolocation
+        if (!$lat || !$lon) {
+            if ($ip && $ip !== '127.0.0.1' && $ip !== '::1') {
+                try {
+                    $ipResponse = \Illuminate\Support\Facades\Http::timeout(5)->get("http://ip-api.com/json/{$ip}");
+                    if ($ipResponse->successful()) {
+                        $ipData = $ipResponse->json();
+                        if (($ipData['status'] ?? '') === 'success') {
+                            $lat = $ipData['lat'] ?? null;
+                            $lon = $ipData['lon'] ?? null;
+                            
+                            $city = $ipData['city'] ?? '';
+                            $region = $ipData['regionName'] ?? '';
+                            $country = $ipData['country'] ?? '';
+                            
+                            $fallbackName = array_filter([$city, $region, $country]);
+                            if (!empty($fallbackName)) {
+                                return implode(', ', $fallbackName) . ' (IP Based)';
+                            }
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Ignore IP lookup failure
+                }
+            }
+        }
+
+        // 2. If we have a provided name from the frontend, use it
         if (!empty($providedName) && $providedName !== 'Unknown Location') {
             return $providedName;
         }
         
+        // 3. Reverse geocode the GPS coordinates
         if ($lat && $lon) {
             try {
                 $response = \Illuminate\Support\Facades\Http::withHeaders([
@@ -54,6 +83,7 @@ class ApiController extends Controller
                 // Ignore and fall through
             }
         }
+        
         return null;
     }
 
@@ -65,7 +95,9 @@ class ApiController extends Controller
             'punch_in' => now(),
         ]);
 
-        $locationName = $this->resolveLocationName($request->latitude, $request->longitude, $request->location_name);
+        $lat = $request->latitude;
+        $lon = $request->longitude;
+        $locationName = $this->resolveLocationName($lat, $lon, $request->location_name, $request->ip());
 
         // Log location immediately on punch in
         NetworkLog::create([
@@ -74,8 +106,8 @@ class ApiController extends Controller
             'local_ip' => $request->local_ip ?? '-',
             'public_ip' => $request->ip(),
             'device_name' => $request->device_name ?? (substr($request->userAgent(), 0, 255) ?? 'Web Browser'),
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'latitude' => $lat,
+            'longitude' => $lon,
             'location_name' => $locationName,
         ]);
 
@@ -95,7 +127,9 @@ class ApiController extends Controller
                 'punch_out' => now(),
             ]);
 
-            $locationName = $this->resolveLocationName($request->latitude, $request->longitude, $request->location_name);
+            $lat = $request->latitude;
+            $lon = $request->longitude;
+            $locationName = $this->resolveLocationName($lat, $lon, $request->location_name, $request->ip());
 
             // Log location immediately on punch out
             NetworkLog::create([
@@ -104,8 +138,8 @@ class ApiController extends Controller
                 'local_ip' => $request->local_ip ?? '-',
                 'public_ip' => $request->ip(),
                 'device_name' => $request->device_name ?? (substr($request->userAgent(), 0, 255) ?? 'Web Browser'),
-                'latitude' => $request->latitude,
-                'longitude' => $request->longitude,
+                'latitude' => $lat,
+                'longitude' => $lon,
                 'location_name' => $locationName,
             ]);
 
@@ -140,7 +174,9 @@ class ApiController extends Controller
         // Get device name from User-Agent, default to 'Web Browser'
         $userAgent = $request->userAgent();
         
-        $locationName = $this->resolveLocationName($request->latitude, $request->longitude, $request->location_name);
+        $lat = $request->latitude;
+        $lon = $request->longitude;
+        $locationName = $this->resolveLocationName($lat, $lon, $request->location_name, $request->ip());
 
         $log = NetworkLog::create([
             'user_id' => auth()->id(),
@@ -148,8 +184,8 @@ class ApiController extends Controller
             'local_ip' => '-',
             'public_ip' => $request->ip(),
             'device_name' => substr($userAgent, 0, 255) ?? 'Web Browser',
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'latitude' => $lat,
+            'longitude' => $lon,
             'location_name' => $locationName,
         ]);
 
