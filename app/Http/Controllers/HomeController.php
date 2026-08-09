@@ -72,4 +72,20 @@ class HomeController extends Controller
 
         return redirect()->back()->with('success', 'Employee account created successfully!');
     }
+
+    public function exportDailyExcel(Request $request)
+    {
+        if (auth()->user()->role !== 'Admin') return abort(403);
+
+        $request->validate([
+            'date' => 'required|date'
+        ]);
+
+        $date = \Carbon\Carbon::parse($request->date)->format('Y-m-d');
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\DailyAttendanceExport($date), 
+            "daily_attendance_{$date}.xlsx"
+        );
+    }
 }

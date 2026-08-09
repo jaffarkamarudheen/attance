@@ -13,8 +13,11 @@
                 <i class="fas fa-file-pdf me-2"></i> Export PDF
             </a>
             <a href="{{ url('/admin/reports/excel') }}" class="btn btn-success rounded-pill shadow-sm btn-hover-scale px-4">
-                <i class="fas fa-file-excel me-2"></i> Export Excel
+                <i class="fas fa-file-excel me-2"></i> Export All
             </a>
+            <button class="btn btn-info text-white rounded-pill shadow-sm btn-hover-scale px-4" data-bs-toggle="modal" data-bs-target="#dailyExportModal">
+                <i class="fas fa-calendar-day me-2"></i> Daily Report
+            </button>
             <button class="btn btn-primary px-4 fw-medium shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#createEmployeeModal">
                 <i class="fas fa-user-plus me-1"></i> New Employee
             </button>
@@ -75,6 +78,31 @@
                     <div class="modal-footer border-0 pb-4 px-4">
                         <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">Create Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Export Modal -->
+    <div class="modal fade" id="dailyExportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-info text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-calendar-day me-2"></i>Download Daily Report</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url('/admin/reports/daily-excel') }}" method="GET">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Select Date</label>
+                            <input type="date" name="date" class="form-control form-control-lg bg-light" required max="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}">
+                            <small class="text-muted mt-2 d-block">This will export a report showing the first punch in, last punch out, total hours, and location/Wi-Fi for all employees on the selected date.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pb-4 px-4">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-info text-white px-4 fw-medium shadow-sm">Download Excel</button>
                     </div>
                 </form>
             </div>
