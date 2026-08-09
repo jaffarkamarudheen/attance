@@ -261,7 +261,7 @@
                                     <td>
                                         @if($log->latitude && $log->longitude)
                                             <a href="https://www.google.com/maps/search/?api=1&query={{ $log->latitude }},{{ $log->longitude }}" target="_blank" class="text-info fw-semibold text-decoration-none small" title="View on Map">
-                                                <i class="fas fa-map-marker-alt me-1"></i> {{ $log->location_name ?: 'View on Map' }}
+                                                <i class="fas fa-map-marker-alt me-1"></i> {{ $log->location_name ?: $log->latitude . ', ' . $log->longitude }}
                                             </a>
                                         @else
                                             <span class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Location Disabled</span>
