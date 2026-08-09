@@ -64,19 +64,33 @@ class AdvancedAttendanceExport implements FromArray, WithHeadings, ShouldAutoSiz
                     $totalHours = round($lastPunchOut->diffInMinutes($firstPunchIn) / 60, 2);
                 }
 
-                // Get network logs to find WiFi and Location (take the first log of the day)
-                $networkLog = NetworkLog::where('user_id', $user->id)
+                // Get network logs to find WiFi and Location (take all logs of the day)
+                $networkLogs = NetworkLog::where('user_id', $user->id)
                     ->whereBetween('created_at', [$startOfDay, $endOfDay])
                     ->orderBy('created_at', 'asc')
-                    ->first();
+                    ->get();
 
                 $ssid = '-';
                 $location = '-';
 
-                if ($networkLog) {
-                    $ssid = $networkLog->ssid ?? '-';
-                    if ($networkLog->latitude && $networkLog->longitude) {
-                        $location = $networkLog->latitude . ', ' . $networkLog->longitude;
+                if ($networkLogs->isNotEmpty()) {
+                    $ssidArray = [];
+                    foreach ($networkLogs as $log) {
+                        if ($log->ssid) {
+                            $ssidArray[] = $log->ssid . ' : ' . $log->created_at->format('h:i A');
+                        }
+                    }
+                    if (count($ssidArray) > 0) {
+                        $ssid = implode(', ', $ssidArray);
+                    }
+
+                    $firstLogWithLocation = $networkLogs->whereNotNull('latitude')->first();
+                    if ($firstLogWithLocation) {
+                        if ($firstLogWithLocation->location_name) {
+                            $location = $firstLogWithLocation->location_name;
+                        } else {
+                            $location = $firstLogWithLocation->latitude . ', ' . $firstLogWithLocation->longitude;
+                        }
                     }
                 }
 

@@ -260,8 +260,8 @@
                                     <td><code class="text-muted">{{ $log->public_ip ?? '-' }}</code></td>
                                     <td>
                                         @if($log->latitude && $log->longitude)
-                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $log->latitude }},{{ $log->longitude }}" target="_blank" class="text-info fw-semibold text-decoration-none small">
-                                                <i class="fas fa-map-marker-alt me-1"></i> View on Map
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $log->latitude }},{{ $log->longitude }}" target="_blank" class="text-info fw-semibold text-decoration-none small" title="View on Map">
+                                                <i class="fas fa-map-marker-alt me-1"></i> {{ Str::limit($log->location_name ?? 'View on Map', 30) }}
                                             </a>
                                         @else
                                             <span class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> Location Disabled</span>
